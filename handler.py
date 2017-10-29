@@ -9,4 +9,6 @@ def get_sentiment(event, context):
     """
     Get sentiment for a search term.
     """
-    return search('trump')
+    return search({
+        'q': 'trump', 'count': 100
+    })
