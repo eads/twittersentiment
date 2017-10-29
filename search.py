@@ -29,7 +29,7 @@ def search(query, client=DEFAULT_CLIENT, analyzer=ANALYZER):
     """
     raw_results = client.GetSearch(raw_query=urlencode(query))
     results = [apply_sentiment(result._json, analyzer) for result in raw_results]
-    summary = process_summary(results)
+    summary = process_summary(results)  # @TODO maybe this should be factored out somewhere else
     return {
         'results': results,
         'sentiment_summary': summary,
@@ -37,6 +37,9 @@ def search(query, client=DEFAULT_CLIENT, analyzer=ANALYZER):
 
 
 def apply_sentiment(tweet, analyzer):
+    """
+    Apply sentiment to a single Tweet.
+    """
     vs = analyzer.polarity_scores(tweet['text'])
     tweet['sentiment'] = vs
     return tweet
