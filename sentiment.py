@@ -5,18 +5,20 @@ import json
 import sys
 import twitter
 
-from urllib import urlencode
+from afinn import Afinn
+from urllib.parse import urlencode
 from vaderSentiment import vaderSentiment as vader
 
-DEFAULT_CLIENT = twitter.Api(consumer_key=os.environ.get('TWITTER_CONSUMER_KEY'),
+default_client = twitter.Api(consumer_key=os.environ.get('TWITTER_CONSUMER_KEY'),
               consumer_secret=os.environ.get('TWITTER_CONSUMER_SECRET'),
               access_token_key=os.environ.get('TWITTER_ACCESS_TOKEN'),
               access_token_secret=os.environ.get('TWITTER_ACCESS_TOKEN_SECRET'))
 
-ANALYZER = vader.SentimentIntensityAnalyzer()
+afinn_analyzer = Afinn()
+vader_analyzer = vader.SentimentIntensityAnalyzer()
 
 
-def search(query, client=DEFAULT_CLIENT, analyzer=ANALYZER):
+def search(query, client=default_client):
     """
     Search the Twitter API and apply sentiment analysis to the text of each tweet.
 
@@ -27,21 +29,16 @@ def search(query, client=DEFAULT_CLIENT, analyzer=ANALYZER):
 
     Returns a dict with results and a summary of the sentiments found.
     """
-    raw_results = client.GetSearch(raw_query=urlencode(query))
-    results = [apply_sentiment(result._json, analyzer) for result in raw_results]
-    summary = process_summary(results)  # @TODO maybe this should be factored out somewhere else
-    return {
-        'results': results,
-        'sentiment_summary': summary,
-    }
+    results = client.GetSearch(raw_query=urlencode(query))
+    return [apply_sentiment(result._json) for result in results]
 
 
-def apply_sentiment(tweet, analyzer):
+def apply_sentiment(tweet):
     """
     Apply sentiment to a single Tweet.
     """
-    vs = analyzer.polarity_scores(tweet['text'])
-    tweet['sentiment'] = vs
+    tweet['afinn_sentiment'] = afinn_analyzer.score(tweet['text'])
+    tweet['vader_sentiment'] = vader_analyzer.polarity_scores(tweet['text'])
     return tweet
 
 

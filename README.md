@@ -8,13 +8,20 @@ This module can be deployed as a service on Amazon Web Services using the server
 
 ## Install
 
+Requirements:
+
+* Python 3 (`brew install python3` on OS X with Homebrew)
+* virtualenv (`pip3 install virtualenv`)
+* nodejs (`brew install node` on OS X with Homebrew; only required for deployment)
+* jq (`brew install jq` on OS X with Homebrew`, required for convenience functions)
+
 ```
-npm install -g serverless
 git clone github.com:eads/twittersentiment
 cd twittersentiment
-virtualenv venv --python=python2.7
+virtualenv venv --python=python3
 source venv/bin/activate
 pip install -r requirements.txt
+npm install -g serverless
 npm install
 ```
 
@@ -29,37 +36,46 @@ export TWITTER_ACCESS_TOKEN="<YOURACCESSTOKEN>"
 export TWITTER_ACCESS_TOKEN_SECRET="<YOURACCESSTOKENSECRET>"
 ```
 
-`jq` is optional, but is required for several output examples and highly recommended. On OS X, install it with:
+## Command line interface
+
+### Condensed results
+
+Get latest tweets about the Seahawks in JSON format:
 
 ```
-brew install jq
+invoke sentiment-search "seahawks"
 ```
 
-## Run
-
-### CLI
+Get latest tweets about the Seahawks in CSV format:
 
 ```
-./search.py panama papers
+invoke sentiment-search "seahawks" -o csv
+```
+
+Write those tweets to a csv file:
+
+```
+invoke sentiment-search "seahawks" -o csv > seahawks-search.csv
+```
+
+### Full search
+
+Get full Twitter API results with sentiment scores added:
+
+```
+invoke full_search "los angeles"
+```
+
+### Basic CLI
+
+_No need to use this. Nonetheless, it exists._
+
+```
+./sentiment.py "panama papers"
 ```
 
 This will get first 100 results for the specified term and return the raw JSON.
 
-#### Filtering results with jq
-
-Let's see what people are saying about Randy "Ironstache" Bryce:
-
-```
-./search.py Ironstache | jq '[.results[] | {text: .text, screen_name: .user.screen_name, compound: .sentiment.compound, pos: .sentiment.pos, neg: .sentiment.neg, neu: .sentiment.neu}]'
-```
-
-And as a CSV, exported to a file:
-
-```
-./search.py Ironstache | jq '[.results[] | {text: .text, screen_name: .user.screen_name, compound: .sentiment.compound, pos: .sentiment.pos, neg: .sentiment.neg, neu: .sentiment.neu}]' | jq -r '(map(keys) | add | unique) as $cols | map(. as $row | $cols | map($row[.])) as $rows | $cols, $rows[] | @csv' > ironstache_sentiment.csv
-```
-
-(I know that's annoyingly long but you can play with it just by changing the search term.)
 
 ### Tests
 
