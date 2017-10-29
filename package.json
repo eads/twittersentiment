@@ -1,0 +1,10 @@
+{
+  "name": "twittersentiment",
+  "version": "0.1.0",
+  "description": "lambda function to apply sentiment analysis to tweets",
+  "author": "Barbara Maseda, Mago Torres, Amy Shen, David Eads",
+  "license": "MIT",
+  "dependencies": {
+    "serverless-python-requirements": "^3.0.9"
+  }
+}
