@@ -2,7 +2,7 @@ import json
 import os
 import twitter
 
-from search import search
+from sentiment import search
 
 
 def get_sentiment(event, context):
