@@ -18,7 +18,7 @@ afinn_analyzer = Afinn()
 vader_analyzer = vader.SentimentIntensityAnalyzer()
 
 
-def search(query, client=default_client):
+def search(params={}, client=default_client):
     """
     Search the Twitter API and apply sentiment analysis to the text of each tweet.
 
@@ -29,7 +29,7 @@ def search(query, client=default_client):
 
     Returns a dict with results and a summary of the sentiments found.
     """
-    results = client.GetSearch(raw_query=urlencode(query))
+    results = client.GetSearch(raw_query=urlencode(params))
     return [apply_sentiment(result._json) for result in results]
 
 

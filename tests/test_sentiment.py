@@ -2,7 +2,6 @@
 Unit tests for `sentiment.py`, our wrapper for the Twitter API and utilities
 for working with the data.
 """
-
 import pytest
 
 from sentiment import search, process_summary
