@@ -56,7 +56,7 @@ def process_summary(results):
     avg_afinn = (sum(afinn_scores) + 0.0) / len(afinn_scores)
     avg_vader = (sum(vader_scores) + 0.0) / len(vader_scores)
     avg_overall = (avg_afinn + avg_vader) / 2.0
-    print("Average sentiments: afinn %f; v %f; overall %f" % (avg_afinn, avg_vader, avg_overall))
+    return "Average sentiments: afinn %f; v %f; overall %f" % (avg_afinn, avg_vader, avg_overall)
 
 if __name__ == '__main__':
     results = search({
