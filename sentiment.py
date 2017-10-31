@@ -44,10 +44,19 @@ def apply_sentiment(tweet):
 
 def process_summary(results):
     """
-    @TODO: Add descriptive stats based on aggregate results.
+    Print descriptive stats based on aggregate results.
+    @TODO use pyplot to display some charts. Ideas for charts:
+    - average scores over time
+    - average scores grouped by location
+    - histogram of frequency distribution for each sentiment score
     """
-    return "@TODO TK TK"
 
+    afinn_scores = [tweet['afinn_sentiment'] for tweet in results]
+    vader_scores = [tweet['vader_sentiment'] for tweet in results]
+    avg_afinn = (sum(afinn_scores) + 0.0) / len(afinn_scores)
+    avg_vader = (sum(vader_scores) + 0.0) / len(vader_scores)
+    avg_overall = (avg_afinn + avg_vader) / 2.0
+    print("Average sentiments: afinn %f; v %f; overall %f" % (avg_afinn, avg_vader, avg_overall))
 
 if __name__ == '__main__':
     results = search({
@@ -55,3 +64,4 @@ if __name__ == '__main__':
         'count': 100,
     })
     print(json.dumps(results, indent=4))
+    process_summary(results)
