@@ -52,11 +52,11 @@ def process_summary(results):
     """
 
     afinn_scores = [tweet['afinn_sentiment'] for tweet in results]
-    vader_scores = [tweet['vader_sentiment'] for tweet in results]
+    vader_scores = [tweet['vader_sentiment']['compound'] for tweet in results]
     avg_afinn = (sum(afinn_scores) + 0.0) / len(afinn_scores)
     avg_vader = (sum(vader_scores) + 0.0) / len(vader_scores)
     avg_overall = (avg_afinn + avg_vader) / 2.0
-    return "Average sentiments: afinn %f; v %f; overall %f" % (avg_afinn, avg_vader, avg_overall)
+    return "Average sentiment scores:\n   afinn: %f\n   vader: %f\n   overall: %f" % (avg_afinn, avg_vader, avg_overall)
 
 if __name__ == '__main__':
     results = search({
@@ -64,4 +64,4 @@ if __name__ == '__main__':
         'count': 100,
     })
     print(json.dumps(results, indent=4))
-    process_summary(results)
+    print(process_summary(results))

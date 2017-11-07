@@ -3,7 +3,7 @@ import json
 import sys
 
 from invoke import task
-from sentiment import search
+from sentiment import search, process_summary
 
 
 @task
@@ -39,6 +39,8 @@ def sentiment_search(ctx, query, limit=100, output='json'):
 
     if output == 'json':
         print(json.dumps(flattened, indent=4))
+        print("%d tweets retrieved" % len(flattened))
+        print(process_summary(results))
     else:
         fieldnames = ['text', 'screen_name', 'vader_compound', 'vader_neu', 'vader_neg', 'vader_pos', 'afinn_score', 'url', 'created_at']
         writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
@@ -47,4 +49,16 @@ def sentiment_search(ctx, query, limit=100, output='json'):
 
 
 def _search(query, limit):
-    return search({'q': query, 'count': limit})
+    tweets = []
+    tweets_to_retrieve = limit  # number of Tweets we still need to retrieve
+    prev_batch = None
+    while tweets_to_retrieve > 0:
+        # Keep getting the next page of tweets until we've retrieved enough
+        search_params = {'q': query, 'count': min(tweets_to_retrieve, 100)}
+        if prev_batch is not None:
+            search_params['max_id'] = max(tweet['id'] for tweet in prev_batch)
+        cur_batch = search(search_params)
+        tweets += cur_batch
+        tweets_to_retrieve -= 100
+        prev_batch = cur_batch
+    return tweets
