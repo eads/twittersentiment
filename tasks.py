@@ -3,7 +3,7 @@ import json
 import sys
 
 from invoke import task
-from sentiment import search, process_summary, create_histogram
+from sentiment import search, summarize, create_histogram
 
 
 @task
@@ -41,7 +41,8 @@ def sentiment_search(ctx, query, limit=100, output='json'):
         print(json.dumps(flattened, indent=4))
         print("%d tweets retrieved" % len(flattened))
         print("EXQMPLE TWEET: " + str(results[0]))
-        print(process_summary(results))
+        summary = summarize(results)
+        print("Average sentiment scores:\n   afinn: %f\n   vader: %f\n   overall: %f" % (summary['afinn'], summary['vader'], summary['average']))
         create_histogram(results, 'graph.png')
     else:
         fieldnames = ['text', 'screen_name', 'vader_compound', 'vader_neu', 'vader_neg', 'vader_pos', 'afinn_score', 'url', 'created_at']

@@ -77,9 +77,9 @@ def create_histogram(results, output_file):
     plt.show()
     plt.savefig(output_file)
 
-def process_summary(results):
+def summarize(results):
     """
-    Print descriptive stats based on aggregate results.
+    Return a dictionary containing various aggregate statistics about the results.
     @TODO use pyplot to display some charts. Ideas for charts:
     - average scores over time
     - average scores grouped by location
@@ -98,7 +98,7 @@ def process_summary(results):
     avg_afinn = (sum(afinn_scores) + 0.0) / len(afinn_scores)
     avg_vader = (sum(vader_scores) + 0.0) / len(vader_scores)
     avg_overall = (avg_afinn + avg_vader) / 2.0
-    return "Average sentiment scores:\n   afinn: %f\n   vader: %f\n   overall: %f" % (avg_afinn, avg_vader, avg_overall)
+    return {'afinn': avg_afinn, 'vader': avg_vader, 'average': avg_overall}
 
 if __name__ == '__main__':
     results = search({
