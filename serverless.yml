@@ -52,3 +52,4 @@ functions:
       - http:
           path: search
           method: get
+          cors: true

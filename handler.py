@@ -17,4 +17,8 @@ def get_sentiment(event, context):
             'results': results,
             'summary': summary,
         }),
+        'headers': {
+            "Access-Control-Allow-Origin" : "*",
+            "Access-Control-Allow-Credentials" : True
+        },
     }
