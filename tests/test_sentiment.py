@@ -4,13 +4,21 @@ for working with the data.
 """
 import pytest
 
-from sentiment import search, process_summary
+from sentiment import search, search_flat, summarize
+
+
+def test_simplified_download():
+    results = search_flat({
+        'q': 'rosemary',
+        'count': 100
+    })
+    assert 100 == len(results)
 
 
 @pytest.mark.parametrize('count', [50, 100])
 def test_search_results_count(count):
     """
-    Test result count with two different parameters.
+    Test result count with different parameters.
     """
     results = search({
         'q': 'sumac',
@@ -40,5 +48,9 @@ def test_search_results_have_afinn_score():
     assert isinstance(results[0]['afinn_sentiment'], float)
 
 
-def test_process_summary():
-    assert process_summary(results=None) == '@TODO TK TK'
+def test_summarize():
+    results = search({
+        'q': 'rosemary',
+        'count': 100
+    })
+    summary = summarize(results)

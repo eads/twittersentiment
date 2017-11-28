@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 
-import os
 import json
-import sys
-import twitter
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from datetime import datetime
+import matplotlib.pyplot as plt
+import os
+import sys
 import time
+import twitter
 
 from afinn import Afinn
+from datetime import datetime
+from pprint import pprint
 from urllib.parse import urlencode
 from vaderSentiment import vaderSentiment as vader
 
@@ -28,7 +29,7 @@ def search(params={}, client=default_client):
 
     Arguments:
 
-    - `query`: A dict of query parameters.
+    - `params`: A dict of query parameters.
     - `client`: A Twitter API client (optional).
 
     Returns a dict with results and a summary of the sentiments found.
@@ -36,6 +37,15 @@ def search(params={}, client=default_client):
     results = client.GetSearch(raw_query=urlencode(params))
     return [apply_sentiment(result._json) for result in results]
 
+
+def search_flat(params={}, client=default_client):
+    results = search(params, client)
+    out = []
+    for result in results:
+        processed = flatten_dict(result)
+        out.append(processed)
+
+    return out
 
 def apply_sentiment(tweet):
     """
@@ -45,16 +55,45 @@ def apply_sentiment(tweet):
     tweet['vader_sentiment'] = vader_analyzer.polarity_scores(tweet['text'])
     return tweet
 
-# Convert Twitter's 'created_at' timestamp into a datetime object
+
+def process_summary(results):
+    """
+    @TODO restore processing
+    """
+    return '@TODO TK TK'
+
+
+def flatten_dict(d):
+    """
+    Flatten a dictionary into one level with keys like 'key.nestedkey'
+    """
+    def items():
+        for key, value in d.items():
+            if isinstance(value, dict):
+                for subkey, subvalue in flatten_dict(value).items():
+                    yield key + "." + subkey, subvalue
+            else:
+                yield key, value
+
+    return dict(items())
+
+
 def parse_timestamp(ts):
+    """
+    Convert Twitter's 'created_at' timestamp into a datetime object
+    """
     return datetime.fromtimestamp(time.mktime(time.strptime(ts,'%a %b %d %H:%M:%S +0000 %Y')))
 
-# Return the average of the afinn and vader sentiment scores for a tweet
 def avg_sentiment(tweet):
+  """
+  Return the average of the afinn and vader sentiment scores for a tweet
+  """
   return (tweet['afinn_sentiment'] + tweet['vader_sentiment']['compound']) / 2.0
 
-# Creates a histogram of the results and saves it in output_file.
 def create_histogram(results, output_file):
+    """
+    Creates a histogram of the results and saves it in output_file.
+    """
     fig, ax = plt.subplots(1,1)
     dates = [parse_timestamp(tweet['created_at']) for tweet in results]
     sentiment_vals = [avg_sentiment(tweet) for tweet in results]
@@ -77,6 +116,7 @@ def create_histogram(results, output_file):
     plt.show()
     plt.savefig(output_file)
 
+
 def summarize(results):
     """
     Return a dictionary containing various aggregate statistics about the results.
@@ -97,8 +137,8 @@ def summarize(results):
     vader_scores = [tweet['vader_sentiment']['compound'] for tweet in results]
     avg_afinn = (sum(afinn_scores) + 0.0) / len(afinn_scores)
     avg_vader = (sum(vader_scores) + 0.0) / len(vader_scores)
-    avg_overall = (avg_afinn + avg_vader) / 2.0
-    return {'afinn': avg_afinn, 'vader': avg_vader, 'average': avg_overall}
+    return {'afinn': avg_afinn, 'vader': avg_vader}
+
 
 if __name__ == '__main__':
     results = search({
@@ -106,4 +146,4 @@ if __name__ == '__main__':
         'count': 100,
     })
     print(json.dumps(results, indent=4))
-    print(process_summary(results))
+    print(pprint(summarize(results)))
