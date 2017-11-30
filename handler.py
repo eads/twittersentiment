@@ -48,14 +48,13 @@ def get_sentiment_csv(event, context):
             search=event['queryStringParameters'].get('q', 'NULLSEARCH'),
             now=datetime.now().isoformat()
         )
-    )
 
     return {
         'statusCode': 200,
         'body': writer_file.getvalue(),
         'headers': {
             'content-type': 'text/csv',
-            'content-disposition': 'attachment; filename="{0}"'.format(csvfilename)),
+            'content-disposition': 'attachment; filename="{0}"'.format(csvfilename),
             "Access-Control-Allow-Origin" : "*",
             "Access-Control-Allow-Credentials" : True
         }
