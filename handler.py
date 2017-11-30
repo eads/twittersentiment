@@ -26,6 +26,37 @@ def get_sentiment(event, context):
         },
     }
 
+def get_simple_sentiment(event, context):
+    results = search(event['queryStringParameters'])
+    summary = summarize(results)
+    output = []
+
+    for tweet in results:
+        clean = {
+            'id': tweet['id'],
+            'user_screen_name': tweet['user']['screen_name'],
+            'user_verified': tweet['user']['verified'],
+            'text': tweet['text'],
+            'created_at': tweet['created_at'],
+            'afinn_sentiment': tweet['afinn_sentiment'],
+            'vader_sentiment_compound': tweet['vader_sentiment']['compound']
+        }
+        output.append(clean)
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps({
+            'results': output,
+            'summary': summary,
+        }),
+        'headers': {
+            "Access-Control-Allow-Origin" : "*",
+            "Access-Control-Allow-Credentials" : True
+        },
+    }
+
+
+
 def get_sentiment_csv(event, context):
     """
     Get sentiment for a search term.
@@ -44,7 +75,7 @@ def get_sentiment_csv(event, context):
     writer.writeheader()
     writer.writerows(results)
 
-    csvfilename = 'twittersentiment{search}-{now}.csv'.format(
+    csvfilename = 'twittersentiment-{search}-{now}.csv'.format(
             search=event['queryStringParameters'].get('q', 'NULLSEARCH'),
             now=datetime.now().isoformat()
         )

@@ -5,6 +5,7 @@
   "author": "Barbara Maseda, Mago Torres, Amy Shen, David Eads",
   "license": "MIT",
   "dependencies": {
+    "react-table": "^6.7.4",
     "serverless-python-requirements": "^3.0.9"
   }
 }

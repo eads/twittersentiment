@@ -53,6 +53,24 @@ functions:
           path: search
           method: get
           cors: true
+    environment:
+      TWITTER_CONSUMER_KEY: "WDQaaIC2e79zaPWPEVKtBIfxq"
+      TWITTER_CONSUMER_SECRET: "VXIX5uhyj1aj8peWQr66vBKzipFDlUdi4BghmVxdtrBKRI7bBp"
+      TWITTER_ACCESS_TOKEN: "9930632-BcQWq7vX1zTAI7LmyqkIj3HdSpn87v7P17b2HdCCB8"
+      TWITTER_ACCESS_TOKEN_SECRET: "j7iDVO2CPhWxeaXgGhCU5EFYlRx3IUArPw2i3gLXI2nQy"
+
+  get_simple_sentiment:
+    handler: handler.get_simple_sentiment
+    events:
+      - http:
+          path: search/simple
+          method: get
+          cors: true
+    environment:
+      TWITTER_CONSUMER_KEY: "WDQaaIC2e79zaPWPEVKtBIfxq"
+      TWITTER_CONSUMER_SECRET: "VXIX5uhyj1aj8peWQr66vBKzipFDlUdi4BghmVxdtrBKRI7bBp"
+      TWITTER_ACCESS_TOKEN: "9930632-BcQWq7vX1zTAI7LmyqkIj3HdSpn87v7P17b2HdCCB8"
+      TWITTER_ACCESS_TOKEN_SECRET: "j7iDVO2CPhWxeaXgGhCU5EFYlRx3IUArPw2i3gLXI2nQy"
 
   get_simplified_csv:
     handler: handler.get_sentiment_csv
@@ -61,6 +79,12 @@ functions:
           path: search/csv
           method: get
           cors: true
+    environment:
+      TWITTER_CONSUMER_KEY: "WDQaaIC2e79zaPWPEVKtBIfxq"
+      TWITTER_CONSUMER_SECRET: "VXIX5uhyj1aj8peWQr66vBKzipFDlUdi4BghmVxdtrBKRI7bBp"
+      TWITTER_ACCESS_TOKEN: "9930632-BcQWq7vX1zTAI7LmyqkIj3HdSpn87v7P17b2HdCCB8"
+      TWITTER_ACCESS_TOKEN_SECRET: "j7iDVO2CPhWxeaXgGhCU5EFYlRx3IUArPw2i3gLXI2nQy"
+
 
 custom:
   pythonRequirements:
