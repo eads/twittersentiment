@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 import json
-import matplotlib.dates as mdates
-import matplotlib.pyplot as plt
 import os
 import sys
 import time
