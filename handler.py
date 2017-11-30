@@ -4,6 +4,7 @@ import io
 import os
 import twitter
 
+from datetime import datetime
 from sentiment import search, search_flat, summarize
 
 
@@ -40,17 +41,23 @@ def get_sentiment_csv(event, context):
         fieldnames = fieldnames + list(in_s2)
 
     writer = csv.DictWriter(writer_file, fieldnames=sorted(fieldnames))
-    import ipdb; ipdb.set_trace();
+    writer.writeheader()
     writer.writerows(results)
+
+    csvfilename = 'twittersentiment{search}-{now}.csv'.format(
+            search=event['queryStringParameters'].get('q', 'NULLSEARCH'),
+            now=datetime.now().isoformat()
+        )
+    )
 
     return {
         'statusCode': 200,
-        'content-type': 'text/csv',
         'body': writer_file.getvalue(),
-        'contentDisposition': 'attachments; filename="twittersentiment.csv"',
-        # 'headers': {
-            # "Access-Control-Allow-Origin" : "*",
-            # "Access-Control-Allow-Credentials" : True
-        # },
+        'headers': {
+            'content-type': 'text/csv',
+            'content-disposition': 'attachment; filename="{0}"'.format(csvfilename)),
+            "Access-Control-Allow-Origin" : "*",
+            "Access-Control-Allow-Credentials" : True
+        }
     }
 
