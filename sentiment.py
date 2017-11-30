@@ -36,10 +36,12 @@ def search(params={}, client=default_client):
     Returns a dict with results and a summary of the sentiments found.
     """
     tweets = []
-    tweets_to_retrieve = params.get('count', 20)
+    tweets_to_retrieve = int(params.get('count', 20))
     prev_batch = None
     while tweets_to_retrieve > 0:
-        search_params = {'q': params.get('q', ''), 'count': min(tweets_to_retrieve, 100)}
+        search_params = params.copy()
+        search_params['q'] = params.get('q', '')
+        search_params['count'] = min(tweets_to_retrieve, 100)
         if prev_batch is not None:
             search_params['max_id'] = max(tweet._json['id'] for tweet in prev_batch)
         cur_batch = client.GetSearch(raw_query=urlencode(search_params))
