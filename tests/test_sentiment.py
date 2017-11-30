@@ -15,7 +15,7 @@ def test_simplified_download():
     assert 100 == len(results)
 
 
-@pytest.mark.parametrize('count', [50, 100])
+@pytest.mark.parametrize('count', [50, 100, 150])
 def test_search_results_count(count):
     """
     Test result count with different parameters.

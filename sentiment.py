@@ -13,6 +13,8 @@ from statistics import mean, median
 from urllib.parse import urlencode
 from vaderSentiment import vaderSentiment as vader
 
+MAX_API_SEARCH = 100
+
 default_client = twitter.Api(consumer_key=os.environ.get('TWITTER_CONSUMER_KEY'),
               consumer_secret=os.environ.get('TWITTER_CONSUMER_SECRET'),
               access_token_key=os.environ.get('TWITTER_ACCESS_TOKEN'),
@@ -33,9 +35,19 @@ def search(params={}, client=default_client):
 
     Returns a dict with results and a summary of the sentiments found.
     """
-    results = client.GetSearch(raw_query=urlencode(params))
-    return [apply_sentiment(result._json) for result in results]
+    tweets = []
+    tweets_to_retrieve = params.get('count', 20)
+    prev_batch = None
+    while tweets_to_retrieve > 0:
+        search_params = {'q': params.get('q', ''), 'count': min(tweets_to_retrieve, 100)}
+        if prev_batch is not None:
+            search_params['max_id'] = max(tweet._json['id'] for tweet in prev_batch)
+        cur_batch = client.GetSearch(raw_query=urlencode(search_params))
+        tweets += [apply_sentiment(result._json) for result in cur_batch]
+        tweets_to_retrieve -= MAX_API_SEARCH
+        prev_batch = cur_batch
 
+    return tweets
 
 def search_flat(params={}, client=default_client):
     results = search(params, client)
