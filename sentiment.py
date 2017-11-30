@@ -9,6 +9,7 @@ import twitter
 from afinn import Afinn
 from datetime import datetime
 from pprint import pprint
+from statistics import mean, median
 from urllib.parse import urlencode
 from vaderSentiment import vaderSentiment as vader
 
@@ -67,6 +68,8 @@ def flatten_dict(d):
     """
     def items():
         for key, value in d.items():
+            if key.startswith('retweeted') or key.startswith('quoted') or key.startswith('entities'):
+                continue
             if isinstance(value, dict):
                 for subkey, subvalue in flatten_dict(value).items():
                     yield key + "." + subkey, subvalue
@@ -132,10 +135,31 @@ def summarize(results):
     """
 
     afinn_scores = [tweet['afinn_sentiment'] for tweet in results]
+    avg_afinn = None
+    median_afinn = None
+
+    if len(afinn_scores):
+        avg_afinn = mean(afinn_scores)
+        median_afinn = median(afinn_scores)
+
     vader_scores = [tweet['vader_sentiment']['compound'] for tweet in results]
-    avg_afinn = (sum(afinn_scores) + 0.0) / len(afinn_scores)
-    avg_vader = (sum(vader_scores) + 0.0) / len(vader_scores)
-    return {'afinn': avg_afinn, 'vader': avg_vader}
+
+    avg_vader = None
+    median_vader = None
+    if len(vader_scores):
+        avg_vader = mean(vader_scores)
+        median_vader = median(vader_scores)
+
+    return {
+        'afinn': {
+            'mean': avg_afinn,
+            'median': median_afinn,
+        },
+        'vader': {
+            'mean': avg_vader,
+            'median': median_vader,
+        }
+    }
 
 
 if __name__ == '__main__':
