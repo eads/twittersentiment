@@ -53,3 +53,15 @@ functions:
           path: search
           method: get
           cors: true
+
+  get_simplified_csv:
+    handler: handler.get_sentiment_csv
+    events:
+      - http:
+          path: search/csv
+          method: get
+          cors: true
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
