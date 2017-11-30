@@ -163,9 +163,10 @@ def summarize(results):
 
 
 if __name__ == '__main__':
-    results = search({
+    results = search_flat({
         'q': sys.argv[1:],
         'count': 100,
     })
-    print(json.dumps(results, indent=4))
-    print(pprint(summarize(results)))
+    pprint(results)
+    # print(json.dumps(results, indent=4))
+    # pprint(summarize(results))
