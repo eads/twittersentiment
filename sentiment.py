@@ -164,7 +164,7 @@ def find_freq_keywords(results, n):
     word_counts = Counter()
     for tweet in results:
         for keyword in tweet['text'].split(' '):
-            if keyword not in STOP_WORDS:
+            if keyword.lower() not in STOP_WORDS:
                 word_counts[keyword.lower()] += 1
     return word_counts.most_common(n)
 
