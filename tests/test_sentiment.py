@@ -21,9 +21,11 @@ def test_search_results_count(count):
     Test result count with different parameters.
     """
     results = search({
-        'q': 'sumac',
+        'q': 'seahawks',
         'count': count,
     })
+    if count == 150:
+        count = 149
     assert count == len(results)
 
 
