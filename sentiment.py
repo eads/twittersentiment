@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
+import csv
 import math
 import json
 import os
+import requests
 import sys
 import time
 import twitter
@@ -10,12 +12,19 @@ import twitter
 from afinn import Afinn
 from collections import Counter
 from datetime import datetime, timedelta
+from io import StringIO
 from pprint import pprint
 from statistics import mean, median
 from urllib.parse import urlencode
 from vaderSentiment import vaderSentiment as vader
 
 MAX_API_SEARCH = 100
+
+MEDIA_HANDLES = 'https://docs.google.com/spreadsheets/d/1MYhSS8HWkz2k5CzTG3v208xjj6rO6D0cukcQNdFkxHc/export?format=csv'
+
+STOP_WORDS = set(line.strip() for line in open('stopwords.txt'))
+
+media_handles = set()
 
 default_client = twitter.Api(consumer_key=os.environ.get('TWITTER_CONSUMER_KEY'),
               consumer_secret=os.environ.get('TWITTER_CONSUMER_SECRET'),
@@ -37,6 +46,8 @@ def search(params={}, client=default_client):
 
     Returns a dict with results and a summary of the sentiments found.
     """
+    load_media_handles()
+
     days = params.get('days', '')
     search_params = params.copy()
     print(days)
@@ -60,7 +71,7 @@ def search_helper(params={}, client=default_client):
     tweets_to_retrieve = int(params.get('count', 100))
     prev_batch = None
     max_id = 0
-    print(tweets_to_retrieve)
+#print(tweets_to_retrieve)
     while tweets_to_retrieve > 0:
         search_params = params.copy()
         search_params['q'] = params.get('q', '')
@@ -68,10 +79,10 @@ def search_helper(params={}, client=default_client):
         if max_id > 0:
             search_params['max_id'] = max_id
 #cur_batch = [tweet for tweet in client.GetSearch(raw_query=urlencode(search_params)) if tweet._json['id'] != search_params['max_id']]
-        print(search_params)
+#print(search_params)
         cur_batch = client.GetSearch(raw_query=urlencode(search_params))
-        print(cur_batch)
-        tweets += [apply_sentiment(result._json) for result in cur_batch]
+#print(cur_batch)
+        tweets += [process_tweet(result._json) for result in cur_batch]
         num_tweets_retrieved = len(cur_batch)
         if num_tweets_retrieved > 0:
             max_id = max(tweet._json['id'] for tweet in cur_batch)
@@ -92,14 +103,23 @@ def search_flat(params={}, client=default_client):
 
     return out
 
-
-def apply_sentiment(tweet):
-    """
-    Apply sentiment to a single Tweet.
-    """
+# 1. Populate the is_media field of the tweet specifying whehter this was tweeted by a media outlet
+# 2. Populate the afinn_sentiment and vader_sentiment field of the tweet with the sentiment scores
+def process_tweet(tweet):
+    tweet['is_media'] = tweet['user']['screen_name'] in media_handles
     tweet['afinn_sentiment'] = afinn_analyzer.score(tweet['text'])
     tweet['vader_sentiment'] = vader_analyzer.polarity_scores(tweet['text'])
     return tweet
+
+# Load media handles from Google Docs file into the `media_handles` global set
+def load_media_handles():
+    resp = requests.get(MEDIA_HANDLES)
+    if resp.status_code != 200:
+        return
+    sio = StringIO(resp.text, newline=None)
+    reader = csv.reader(sio, dialect=csv.excel)
+    for row in reader:
+        media_handles.add(row[0].strip())
 
 def flatten_dict(d):
     """
@@ -144,7 +164,8 @@ def find_freq_keywords(results, n):
     word_counts = Counter()
     for tweet in results:
         for keyword in tweet['text'].split(' '):
-            word_counts[keyword] += 1
+            if keyword not in STOP_WORDS:
+                word_counts[keyword.lower()] += 1
     return word_counts.most_common(n)
 
 def summarize(results):
@@ -171,7 +192,7 @@ def summarize(results):
         avg_afinn = mean(afinn_scores)
         median_afinn = median(afinn_scores)
 
-    vader_scores = [tweet['vader_sentiment']['compound'] for tweet in results]
+    vader_scores = [tweet['vader_sentiment.compound'] for tweet in results]
 
     avg_vader = None
     median_vader = None
@@ -199,6 +220,3 @@ if __name__ == '__main__':
         'q': sys.argv[1:],
         'count': 100,
     })
-    pprint(results)
-    # print(json.dumps(results, indent=4))
-    # pprint(summarize(results))

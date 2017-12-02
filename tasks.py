@@ -13,7 +13,6 @@ def sentiment_search(ctx, query, limit=100, days=None):
     just text, screen_name, and sentiment scores.
     """
     results = search_flat({'q': query, 'count': limit, 'days': days})
-#print(json.dumps(results, indent=4))
-    for tweet in results:
-        print(tweet['created_at'])
+    print(json.dumps(results, indent=4))
+    print("summary: " + str(summarize(results)))
     print("%d tweets retrieved" % len(results))
