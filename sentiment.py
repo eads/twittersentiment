@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import math
 import json
 import os
 import sys
@@ -7,7 +8,8 @@ import time
 import twitter
 
 from afinn import Afinn
-from datetime import datetime
+from collections import Counter
+from datetime import datetime, timedelta
 from pprint import pprint
 from statistics import mean, median
 from urllib.parse import urlencode
@@ -35,24 +37,50 @@ def search(params={}, client=default_client):
 
     Returns a dict with results and a summary of the sentiments found.
     """
+    days = params.get('days', '')
+    search_params = params.copy()
+    print(days)
+    if days is not None and days != '' and days.isdigit():
+        days = int(days)
+        tweets = []
+        tweets_per_day = math.ceil(search_params['count'] / (days * 1.0))
+        today = datetime.now()
+        for days_ago in range(1, days+1):
+            day = today - timedelta(days_ago)
+            search_params['until'] = day.strftime("%Y-%m-%d")
+            search_params['count'] = tweets_per_day
+            (results, maxid) = search_helper(search_params)
+            tweets += results
+            search_params['max_id'] = maxid
+        return tweets
+    return search_helper(params, client)[0]
+
+def search_helper(params={}, client=default_client):
     tweets = []
     tweets_to_retrieve = int(params.get('count', 100))
     prev_batch = None
+    max_id = 0
+    print(tweets_to_retrieve)
     while tweets_to_retrieve > 0:
         search_params = params.copy()
-        search_params['max_id'] = 0
         search_params['q'] = params.get('q', '')
         search_params['count'] = min(tweets_to_retrieve, 100)
-        if prev_batch is not None:
-            search_params['max_id'] = max(tweet._json['id'] for tweet in prev_batch)
-        cur_batch = [tweet for tweet in client.GetSearch(raw_query=urlencode(search_params)) if tweet._json['id'] != search_params['max_id']]
+        if max_id > 0:
+            search_params['max_id'] = max_id
+#cur_batch = [tweet for tweet in client.GetSearch(raw_query=urlencode(search_params)) if tweet._json['id'] != search_params['max_id']]
+        print(search_params)
+        cur_batch = client.GetSearch(raw_query=urlencode(search_params))
+        print(cur_batch)
         tweets += [apply_sentiment(result._json) for result in cur_batch]
-        if len(cur_batch) < 99:
+        num_tweets_retrieved = len(cur_batch)
+        if num_tweets_retrieved > 0:
+            max_id = max(tweet._json['id'] for tweet in cur_batch)
+        if num_tweets_retrieved < 99:
             break
-        tweets_to_retrieve -= MAX_API_SEARCH
+        tweets_to_retrieve -= num_tweets_retrieved
         prev_batch = cur_batch
 
-    return tweets
+    return (tweets, max_id)
 
 
 def search_flat(params={}, client=default_client):
@@ -72,14 +100,6 @@ def apply_sentiment(tweet):
     tweet['afinn_sentiment'] = afinn_analyzer.score(tweet['text'])
     tweet['vader_sentiment'] = vader_analyzer.polarity_scores(tweet['text'])
     return tweet
-
-
-def process_summary(results):
-    """
-    @TODO restore processing
-    """
-    return '@TODO TK TK'
-
 
 def flatten_dict(d):
     """
@@ -119,6 +139,13 @@ def create_histogram(results):
     dates = [parse_timestamp(tweet['created_at']) for tweet in results]
     sentiment_vals = [avg_sentiment(tweet) for tweet in results]
 
+def find_freq_keywords(results, n):
+    # Return the n most frequent keywords that show up in the tweets
+    word_counts = Counter()
+    for tweet in results:
+        for keyword in tweet['text'].split(' '):
+            word_counts[keyword] += 1
+    return word_counts.most_common(n)
 
 def summarize(results):
     """
@@ -152,6 +179,8 @@ def summarize(results):
         avg_vader = mean(vader_scores)
         median_vader = median(vader_scores)
 
+    keywords = find_freq_keywords(results, 5)
+
     return {
         'afinn': {
             'mean': avg_afinn,
@@ -160,7 +189,8 @@ def summarize(results):
         'vader': {
             'mean': avg_vader,
             'median': median_vader,
-        }
+        },
+        'keywords': keywords
     }
 
 
