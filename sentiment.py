@@ -64,6 +64,7 @@ def search_flat(params={}, client=default_client):
 
     return out
 
+
 def apply_sentiment(tweet):
     """
     Apply sentiment to a single Tweet.

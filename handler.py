@@ -33,7 +33,7 @@ def get_simple_sentiment(event, context):
 
     for tweet in results:
         clean = {
-            'id': tweet['id'],
+            'id_str': tweet['id_str'],
             'user_screen_name': tweet['user']['screen_name'],
             'user_verified': tweet['user']['verified'],
             'text': tweet['text'],
