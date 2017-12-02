@@ -80,12 +80,13 @@ def search_helper(params={}, client=default_client):
             search_params['max_id'] = max_id
 #cur_batch = [tweet for tweet in client.GetSearch(raw_query=urlencode(search_params)) if tweet._json['id'] != search_params['max_id']]
 #print(search_params)
-        cur_batch = client.GetSearch(raw_query=urlencode(search_params))
+        print(max_id)
+        cur_batch = [tweet for tweet in client.GetSearch(raw_query=urlencode(search_params)) if tweet._json['id'] != max_id]
 #print(cur_batch)
         tweets += [process_tweet(result._json) for result in cur_batch]
         num_tweets_retrieved = len(cur_batch)
         if num_tweets_retrieved > 0:
-            max_id = max(tweet._json['id'] for tweet in cur_batch)
+            max_id = min(tweet._json['id'] for tweet in cur_batch)
         if num_tweets_retrieved < 99:
             break
         tweets_to_retrieve -= num_tweets_retrieved
