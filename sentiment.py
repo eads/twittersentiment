@@ -41,10 +41,13 @@ def search(params={}, client=default_client):
     while tweets_to_retrieve > 0:
         search_params = params.copy()
         search_params['q'] = params.get('q', '')
+        days = params.get('days', '')
+        if days != '':
+            
         search_params['count'] = min(tweets_to_retrieve, 100)
         if prev_batch is not None:
             search_params['max_id'] = max(tweet._json['id'] for tweet in prev_batch)
-        cur_batch = client.GetSearch(raw_query=urlencode(search_params))
+        cur_batch = [tweet for tweet in client.GetSearch(raw_query=urlencode(search_params)) if tweet._json['id'] != search_params['max_id']]
         tweets += [apply_sentiment(result._json) for result in cur_batch]
         tweets_to_retrieve -= MAX_API_SEARCH
         prev_batch = cur_batch
@@ -105,31 +108,14 @@ def avg_sentiment(tweet):
   """
   return (tweet['afinn_sentiment'] + tweet['vader_sentiment']['compound']) / 2.0
 
-def create_histogram(results, output_file):
+# Return a JSON array of histogram buckets.
+def create_histogram(results):
     """
     Creates a histogram of the results and saves it in output_file.
     """
     fig, ax = plt.subplots(1,1)
     dates = [parse_timestamp(tweet['created_at']) for tweet in results]
     sentiment_vals = [avg_sentiment(tweet) for tweet in results]
-
-    months = mdates.MonthLocator()  # every month
-    days = mdates.DayLocator()  # every day of the month
-
-    ax.xaxis.set_major_locator(months)
-    ax.xaxis.set_minor_locator(days)
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%y'))
-
-    datemin = min(dates)
-    datemax = max(dates)
-    ax.set_xlim(datemin, datemax)
-
-    ax.plot(dates, sentiment_vals)
-    ax.xaxis_date()
-    plt.xlabel('Date')
-    plt.ylabel('Average sentiment score')
-    plt.show()
-    plt.savefig(output_file)
 
 
 def summarize(results):
