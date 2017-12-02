@@ -39,7 +39,8 @@ def get_simple_sentiment(event, context):
             'text': tweet['text'],
             'created_at': tweet['created_at'],
             'afinn_sentiment': tweet['afinn_sentiment'],
-            'vader_sentiment_compound': tweet['vader_sentiment']['compound']
+            'vader_sentiment_compound': tweet['vader_sentiment']['compound'],
+            'is_media': tweet['is_media']
         }
         output.append(clean)
 
