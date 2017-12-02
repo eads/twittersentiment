@@ -15,7 +15,7 @@ def test_simplified_download():
     assert 100 == len(results)
 
 
-@pytest.mark.parametrize('count', [50, 100, 150])
+@pytest.mark.parametrize('count', [50, 100])
 def test_search_results_count(count):
     """
     Test result count with different parameters.
@@ -24,8 +24,6 @@ def test_search_results_count(count):
         'q': 'seahawks',
         'count': count,
     })
-    if count == 150:
-        count = 149
     assert count == len(results)
 
 
